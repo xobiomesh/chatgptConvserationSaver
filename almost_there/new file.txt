@@ -1,0 +1,42 @@
+(function() {
+    const conversation = [];
+    const chatMessages = document.querySelectorAll("div[data-message-author-role]");
+    
+    console.log(`Found ${chatMessages.length} chat messages`);
+
+    chatMessages.forEach((msg, index) => {
+        const role = msg.getAttribute('data-message-author-role');
+        let textElement = msg.querySelector("div.relative div");
+        if (!textElement) {
+            textElement = msg.querySelector("div.markdown.prose.w-full.break-words");
+        }
+
+        if (role && textElement) {
+            const user = role === 'user' ? 'User' : 'Assistant';
+            const text = textElement.innerText.trim();
+            conversation.push({ user, text });
+            console.log(`Message ${index + 1}: ${user} - ${text}`);
+        } else {
+            console.log(`Message ${index + 1}: Missing role or text element`);
+        }
+    });
+
+    if (conversation.length > 0) {
+        const conversationString = JSON.stringify(conversation, null, 2);
+        const blob = new Blob([conversationString], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'conversation.json';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+
+        URL.revokeObjectURL(url);
+        console.log('Conversation downloaded successfully');
+    } else {
+        console.log('No messages found to save');
+    }
+})();
+
